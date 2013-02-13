@@ -1,7 +1,5 @@
-// var game = require ('./towers_of_hanoi').TowersOfHanoi();
-
-var TowersOfHanoi = function () {
-  var game = {
+function TowersOfHanoi() {
+  return {
     board: undefined,
     setBoard: function() {
       this.board = [[3,2,1],[],[]]
@@ -33,13 +31,10 @@ var TowersOfHanoi = function () {
       }
     }
   }
-
-  return game;
 }
 
-
 function playTowers(game) {
-  var playGame = {
+  return {
     getMove: function() {
       var move = prompt("What's your move? (from, to)");
       move = move.split(', ');
@@ -81,8 +76,6 @@ function playTowers(game) {
       this.printWinner();
     }
   }
-
-  return playGame;
 }
 
 function println(string) {
