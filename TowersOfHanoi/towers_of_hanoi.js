@@ -34,3 +34,7 @@ var TowersOfHanoi = function () {
 
   return game;
 }
+
+module.exports = {
+  TowersOfHanoi: TowersOfHanoi
+}
