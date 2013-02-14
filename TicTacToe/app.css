@@ -1,0 +1,44 @@
+.square {
+  background-color: white;
+  width: 200px;
+  height: 165px;
+  padding-top: 35px;
+  border: 1px solid black;
+  float: left;
+  text-align: center;
+}
+
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
+
+.game {
+
+}
+
+.row {
+  margin: auto;
+  width: 610px;
+}
+
+.markX {
+  background-image: url('http://zachbussey.com/wp-content/uploads/2011/02/Cute-Kitten.jpg');
+  background-size: cover;
+}
+
+.markO {
+  background-image: url('http://2.bp.blogspot.com/-XQByG8RHAcQ/T5RVq3slTZI/AAAAAAAADyU/oWAmiinkU5o/s640/enhanced-buzz-21204-1334850686-2.jpg');
+  background-size: cover;
+}
+
+.message {
+  font-size: 100px;
+  margin: auto;
+  text-align: center;
+}

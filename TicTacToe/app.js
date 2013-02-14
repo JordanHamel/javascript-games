@@ -9,12 +9,16 @@ function TicTacToe () {
     move: function (x, y, player_mark) {
       this.board[y][x] = player_mark;
     },
+    gameOver: false,
     validMove: function (x, y) {
       if (x > 2 || x < 0 || y > 2 || y < 0) {
         return false;
       } else if (this.board[y][x] !== null) {
         return false;
-      } else {
+      } else if (this.gameOver) {
+        return false;
+      }
+      else {
         return true;
       }
     },
@@ -26,12 +30,15 @@ function TicTacToe () {
 
       var winner = false;
 
+      var that = this
       function threeInARow (positions, index, array) {
         var line = flat_board[positions[0]] + flat_board[positions[1]] + flat_board[positions[2]]
         if (line === 'XXX') {
           winner = 'X';
+          that.gameOver = true;
         } else if (line === 'OOO') {
           winner = 'O';
+          that.gameOver = true;
         }
       }
 
@@ -39,6 +46,7 @@ function TicTacToe () {
 
       if (flat_board.indexOf(null) == -1) {
         winner = 'tie';
+        this.gameOver = true;
       }
 
       return winner;
@@ -49,14 +57,18 @@ function TicTacToe () {
 function TicTacToeGame (game) {
   return {
     printBoard: function () {
-      println(game.board[0].join(" | "));
-      println("-------");
-      println(game.board[1].join(" | "));
-      println("-------");
-      println(game.board[2].join(" | "));
+      for (var i = 0; i < game.board.length; i++) {
+        $('div.game').append('<div class="row row' + i + ' cf"></div>')
+        for (var j = 0; j < game.board.length; j++) {
+          mark = game.board[i][j]
+          if (mark == null) {
+            mark = ''
+          }
+          $('div.row' + i).append('<div class = "square" id =' + i + j + '>' + mark + '</div>')
+        }
+      }
     },
     printWinner: function (winner) {
-      this.printBoard();
       if (winner == 'tie') {
         println("It's a tie!");
       } else {
@@ -66,12 +78,19 @@ function TicTacToeGame (game) {
     printInvalid: function () {
       alert("Invalid move, try again.");
     },
-    clearScreen: function () {
-      clear();
-    },
-    getMove: function (player_mark) {
-      move = prompt(player_mark + ", enter your move (x, y)");
-      return move.split(", ");
+    game: game,
+    mark: 'X',
+    tryMove: function (pos) {
+      console.log(game.gameOver)
+      if (game.validMove(pos[0], pos[1])) {
+        game.move(pos[0], pos[1], this.mark);
+        if (game.winner()) {
+          this.printWinner(game.winner());
+        }
+        return true;
+      } else {
+        return false;
+      }
     },
     play: function () {
       game.setBoard();
@@ -108,14 +127,30 @@ function TicTacToeGame (game) {
 
 
 function println(string) {
-  // we'll learn about this when we talk about DOM manipulation.
-  $('.output').append(string);
-  $('.output').append("\n");
+  $('.message').append(string);
 }
 
 function clear() {
   $('.output').html("");
 }
 
+game = TicTacToe();
+g = TicTacToeGame(game);
+g.game.setBoard();
+g.printBoard();
 
-TicTacToeGame(TicTacToe()).play();
+// $('body').append('<div class="asdf" >ASDF</div>');
+
+var mark = 'X';
+$('.square').click(function (clicked) {
+  if (g.tryMove(clicked.target.id.split(''))) {
+    $(clicked.currentTarget).addClass('mark' + g.mark);
+    if (g.mark == 'X') {
+      g.mark = 'O';
+    } else {
+      g.mark = 'X';
+    }
+  } else {
+    g.printInvalid();
+  }
+});
