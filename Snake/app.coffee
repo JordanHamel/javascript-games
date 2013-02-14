@@ -26,72 +26,84 @@ Snake = () ->
           onPosition = true
       onPosition
 
-Game = (snake, size, browser) ->
+Game = (snake, board) ->
   game =
-    board: []
-    size: size
-    initialize: () ->
-      this.setBoard()
-      this.setSnake()
-      this.setMouse()
-    setBoard: () ->
-      for i in [0..(this.size - 1)]
-        this.board[i] = []
-        for j in [0..(this.size - 1)]
-          this.markBoard([i, j], null)
-    setSnake: () ->
-      for i in [0...snake.positions.length]
-        this.markBoard(snake.positions[i], snake.mark)
-    markBoard: (position, mark) ->
-      this.board[position[0]][position[1]] = mark
+    board: board
+    snake: snake
     mouse:
-      position: []
       mark: '*'
-    setMouse: () ->
-      while true
-        position = this.randomPosition()
-        break if !snake.onPosition(position)
-      this.markBoard(position, this.mouse.mark)
-      this.mouse.position = position
-    randomPosition: () ->
-      [Math.floor(Math.random() * this.size),
-       Math.floor(Math.random() * this.size)]
+      position: []
+    initialize: () ->
+      board.initialize()
+      board.setSnake(snake)
+      board.setMouse(this.mouse)
     addToHead: () ->
       snake.positions.push(next = snake.nextPosition())
-      this.markBoard(next, snake.mark)
+      board.markBoard(next, snake.mark)
     takeFromTail: () ->
       tail = snake.positions.shift()
-      this.markBoard(tail, null)
+      board.markBoard(tail, null)
     checkCollisions: () ->
       next = snake.nextPosition()
-      offBoard = (next[0] > (this.size - 1) || next[0] < 0 || next[1] > (this.size - 1) || next[1] < 0)
-      offBoard || snake.onPosition(next)
+      board.offBoard(next) || snake.onPosition(next)
     checkMice: () ->
       next = snake.nextPosition()
       next[0] == this.mouse.position[0] && next[1] == this.mouse.position[1]
     turn: (direction) ->
       snake.turn(direction)
-    printBoard: () ->
-      for i in [0...this.board.length]
-        row = ''
-        for j in [0...this.board[i].length]
-          if this.board[i][j] == null
-            row += 'O'
-          else
-            row += this.board[i][j]
-        browser.println(row)
-    snake: () ->
-      snake
     step: () ->
       if this.checkCollisions()
         return false
       if this.checkMice()
         this.addToHead()
-        this.setMouse()
+        board.setMouse(this.mouse)
+        return true
       else
         this.addToHead()
         this.takeFromTail()
-      true
+        return true
+
+Board = (size) ->
+  board =
+    initialize: () ->
+      this.setBoard()
+    board: []
+    size: size
+    setBoard: () ->
+      for i in [0..(this.size - 1)]
+        this.board[i] = []
+        for j in [0..(this.size - 1)]
+          this.markBoard([i, j], null)
+    setSnake: (snake) ->
+      for i in [0...snake.positions.length]
+        this.markBoard(snake.positions[i], snake.mark)
+    setMouse: (mouse) ->
+      while true
+        position = this.randomPosition()
+        break if !snake.onPosition(position)
+      this.markBoard(position, mouse.mark)
+      mouse.position = position
+    markBoard: (position, mark) ->
+      this.board[position[0]][position[1]] = mark
+    randomPosition: () ->
+      [Math.floor(Math.random() * this.size),
+       Math.floor(Math.random() * this.size)]
+    offBoard: (position) ->
+      x = position[0] > (this.size - 1) || position[0] < 0
+      y = position[1] > (this.size - 1) || position[1] < 0
+      x || y
+
+
+printBoard = (board) ->
+  size = board.length
+  for i in [0...size]
+    row = ''
+    for j in [0...size]
+      if board[i][j] == null
+        row += 'O'
+      else
+        row += board[i][j]
+    browser.println(row)
 
 browser =
   println: (string) ->
@@ -102,26 +114,39 @@ browser =
 
 $('html').keydown((event) ->
   switch event.keyCode
-    when 38 then game.turn('north')
-    when 40 then game.turn('south')
-    when 37 then game.turn('west')
-    when 39 then game.turn('east')
+    when 38 then snake.turn('north')
+    when 40 then snake.turn('south')
+    when 37 then snake.turn('west')
+    when 39 then snake.turn('east')
+    # when 32 then togglePause()
 )
 
-SIZE = parseInt(prompt("How large would you like the board?"))
-DELAY = 250
-game = Game(Snake(), SIZE, browser)
-game.initialize(SIZE)
-
-run_loop = () ->
+runLoop = () ->
   window.setInterval((
     () ->
       browser.clear()
       alive = game.step()
-      game.printBoard()
+      printBoard(board.board)
       unless alive
         browser.println("You Lose!")
-        clearInterval(run_loop)
+        clearInterval(runLoop)
   ), DELAY)
 
-window.setTimeout(run_loop, DELAY)
+# paused = false
+# togglePause = () ->
+#   if paused
+#     paused = false
+#     runLoop()
+#   else
+#     paused = true
+#     window.clearInterval(runLoop)
+
+
+SIZE = parseInt(prompt("How large would you like the board?"))
+DELAY = 250
+
+window.setTimeout(runLoop, DELAY)
+snake = Snake()
+board = Board(SIZE)
+game = Game(snake, board)
+game.initialize()
