@@ -5,6 +5,8 @@ Snake = () ->
     positions: [[1, 1]]
     head: () ->
       this.positions[this.positions.length - 1]
+    tail: () ->
+      this.positions[0]
     length: () ->
       this.positions.length
     turn: (direction) ->
@@ -104,6 +106,8 @@ printBoard = (board) ->
         $('#' + i + j).addClass('snake')
         if snake.head()[0] == i && snake.head()[1] == j
           $('#' + i + j).addClass('head')
+        else if snake.tail()[0] == i && snake.tail()[1] == j
+          $('#' + i + j).addClass('tail')
       else if board[i][j] == game.mouse.mark
         $('#' + i + j).addClass('mouse')
 
@@ -154,3 +158,5 @@ snake = Snake()
 board = Board(SIZE)
 game = Game(snake, board)
 game.initialize()
+
+$('.game').css("width", SIZE * 50);

@@ -25,10 +25,15 @@ function TicTacToe () {
     winner: function () {
       var flat_board = this.board[0].concat(this.board[1]).concat(this.board[2])
       var winning_lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
-                     [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                     [0, 4, 8], [2, 4, 6]];
+                           [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                           [0, 4, 8], [2, 4, 6]];
 
       var winner = false;
+
+      if (flat_board.indexOf(null) == -1) {
+        winner = 'tie';
+        this.gameOver = true;
+      }
 
       var that = this
       function threeInARow (positions, index, array) {
@@ -43,11 +48,6 @@ function TicTacToe () {
       }
 
       winning_lines.forEach(threeInARow);
-
-      if (flat_board.indexOf(null) == -1) {
-        winner = 'tie';
-        this.gameOver = true;
-      }
 
       return winner;
     }
