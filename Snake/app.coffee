@@ -97,20 +97,22 @@ Board = (size) ->
 printBoard = (board) ->
   size = board.length
   for i in [0...size]
-    row = ''
+    $('.game').append('<div class="row cf" id="row' + i + '"></div>')
     for j in [0...size]
-      if board[i][j] == null
-        row += 'O'
-      else
-        row += board[i][j]
-    browser.println(row)
+      $('#row' + i).append('<div class="square" id=' + i + j + '></div>')
+      if board[i][j] == snake.mark
+        $('#' + i + j).addClass('snake')
+        if snake.head()[0] == i && snake.head()[1] == j
+          $('#' + i + j).addClass('head')
+      else if board[i][j] == game.mouse.mark
+        $('#' + i + j).addClass('mouse')
+
 
 browser =
   println: (string) ->
-    $('.output').append(string)
-    $('.output').append("\n")
+    $('.message').append(string)
   clear: () ->
-    $('.output').html("")
+    $('.game').html("")
 
 $('html').keydown((event) ->
   switch event.keyCode
@@ -118,34 +120,36 @@ $('html').keydown((event) ->
     when 40 then snake.turn('south')
     when 37 then snake.turn('west')
     when 39 then snake.turn('east')
-    # when 32 then togglePause()
+    when 32 then togglePause()
 )
 
-runLoop = () ->
-  window.setInterval((
-    () ->
-      browser.clear()
-      alive = game.step()
-      printBoard(board.board)
-      unless alive
-        browser.println("You Lose!")
-        clearInterval(runLoop)
-  ), DELAY)
+run = null
+runGame = () ->
+  run = window.setInterval(runStep, DELAY)
+stopGame = () ->
+  window.clearInterval(run)
 
-# paused = false
-# togglePause = () ->
-#   if paused
-#     paused = false
-#     runLoop()
-#   else
-#     paused = true
-#     window.clearInterval(runLoop)
+runStep = () ->
+  browser.clear()
+  alive = game.step()
+  printBoard(board.board)
+  unless alive
+    browser.println("You Lose!")
+    stopGame()
 
+paused = false
+togglePause = () ->
+  if paused
+    paused = false
+    runGame()
+  else
+    paused = true
+    stopGame()
 
 SIZE = parseInt(prompt("How large would you like the board?"))
-DELAY = 250
+DELAY = 200
 
-window.setTimeout(runLoop, DELAY)
+window.setTimeout(runGame, DELAY)
 snake = Snake()
 board = Board(SIZE)
 game = Game(snake, board)

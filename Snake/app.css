@@ -1,0 +1,36 @@
+.message {
+  font-size: 80px;
+}
+
+.game {
+  float: left;
+  border: 3px solid black;
+}
+
+.square {
+  width: 35px;
+  height: 35px;
+  float: left;
+}
+
+.snake {
+  background-color: green;
+}
+
+.head {
+  background-color: red;
+}
+
+.mouse {
+  background-color: grey;
+}
+
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
