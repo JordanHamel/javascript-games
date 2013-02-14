@@ -1,119 +1,104 @@
 Snake = () ->
   snake =
+    mark: 'X'
     direction: 'east'
-    positions: [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
+    positions: [[1, 1]]
     head: () ->
       this.positions[this.positions.length - 1]
     length: () ->
       this.positions.length
     turn: (direction) ->
       this.direction = direction
+    nextPosition: () ->
+      switch this.direction
+        when 'east'
+        then [this.head()[0], this.head()[1] + 1]
+        when 'west'
+        then [this.head()[0], this.head()[1] - 1]
+        when 'north'
+        then [this.head()[0] - 1, this.head()[1]]
+        when 'south'
+        then [this.head()[0] + 1, this.head()[1]]
+    onPosition: (position) ->
+      onPosition = false
+      for i in [0...this.positions.length]
+        if this.positions[i][0] == position[0] && this.positions[i][1] == position[1]
+          onPosition = true
+      onPosition
 
-Game = (snake) ->
+Game = (snake, size, browser) ->
   game =
-    board: new Array()
-    setupBoard: () ->
-      this.fillBoard()
+    board: []
+    size: size
+    initialize: () ->
+      this.setBoard()
       this.setSnake()
       this.setMouse()
-    fillBoard: () ->
-      for i in [0..9]
-        this.board[i] = new Array()
-        for j in [0..9]
-          this.board[i][j] = null
+    setBoard: () ->
+      for i in [0..(this.size - 1)]
+        this.board[i] = []
+        for j in [0..(this.size - 1)]
+          this.markBoard([i, j], null)
     setSnake: () ->
       for i in [0...snake.positions.length]
-        this.board[snake.positions[i][0]][snake.positions[i][1]] = '='
-    mousePosition: [5, 7],
+        this.markBoard(snake.positions[i], snake.mark)
+    markBoard: (position, mark) ->
+      this.board[position[0]][position[1]] = mark
+    mouse:
+      position: []
+      mark: '*'
     setMouse: () ->
-      this.board[this.mousePosition[0]][this.mousePosition[1]] = '*'
-    moveMouse: () ->
       while true
-        x = Math.floor(Math.random() * 10)
-        y = Math.floor(Math.random() * 10)
-
-        onMouse = () ->
-          mouse = false
-
-          for i in [0...snake.positions.length]
-            if (snake.positions[i][0] == x && snake.positions[i][1] == y)
-              mouse = true
-          mouse
-
-        break if !onMouse()
-
-      this.board[x][y] = '*'
-      this.mousePosition = [x, y]
-    nextPosition: () ->
-      switch snake.direction
-        when 'east'
-        then [snake.head()[0], snake.head()[1] + 1]
-        when 'west'
-        then [snake.head()[0], snake.head()[1] - 1]
-        when 'north'
-        then [snake.head()[0] - 1, snake.head()[1]]
-        when 'south'
-        then [snake.head()[0] + 1, snake.head()[1]]
+        position = this.randomPosition()
+        break if !snake.onPosition(position)
+      this.markBoard(position, this.mouse.mark)
+      this.mouse.position = position
+    randomPosition: () ->
+      [Math.floor(Math.random() * this.size),
+       Math.floor(Math.random() * this.size)]
     addToHead: () ->
-      next = this.nextPosition()
-      this.board[next[0]][next[1]] = '#'
-      snake.positions.push(next)
+      snake.positions.push(next = snake.nextPosition())
+      this.markBoard(next, snake.mark)
     takeFromTail: () ->
       tail = snake.positions.shift()
-      this.board[tail[0]][tail[1]] = null
+      this.markBoard(tail, null)
     checkCollisions: () ->
-      next = this.nextPosition()
-
-      hitSelf = () ->
-        hit = false
-        for i in [0...snake.positions.length]
-          if snake.positions[i][0] == next[0] && snake.positions[i][1] == next[1]
-            hit = true
-        hit
-
-      offBoard = (next[0] > 9 || next[0] < 0 || next[1] > 9 || next[1] < 0)
-
-      offBoard || hitSelf()
+      next = snake.nextPosition()
+      offBoard = (next[0] > (this.size - 1) || next[0] < 0 || next[1] > (this.size - 1) || next[1] < 0)
+      offBoard || snake.onPosition(next)
     checkMice: () ->
-      next = this.nextPosition()
-      next[0] == this.mousePosition[0] && next[1] == this.mousePosition[1]
+      next = snake.nextPosition()
+      next[0] == this.mouse.position[0] && next[1] == this.mouse.position[1]
     turn: (direction) ->
       snake.turn(direction)
     printBoard: () ->
       for i in [0...this.board.length]
         row = ''
         for j in [0...this.board[i].length]
-          this.board[i][j] == null ? row += 'O' : row += this.board[i][j]
-        println(row)
+          if this.board[i][j] == null
+            row += 'O'
+          else
+            row += this.board[i][j]
+        browser.println(row)
     snake: () ->
       snake
     step: () ->
-      clear()
       if this.checkCollisions()
-        println("You Lose!")
-        return
+        return false
       if this.checkMice()
         this.addToHead()
-        this.moveMouse()
+        this.setMouse()
       else
         this.addToHead()
         this.takeFromTail()
-      this.printBoard()
+      true
 
-game = Game(Snake())
-game.setupBoard()
-
-run_loop = () ->
-  window.setInterval((() -> game.step()), 250)
-
-window.setTimeout(run_loop, 250)
-
-println = (string) ->
-  $('.output').append(string)
-  $('.output').append("\n")
-
-clear = () ->
-  $('.output').html("")
+browser =
+  println: (string) ->
+    $('.output').append(string)
+    $('.output').append("\n")
+  clear: () ->
+    $('.output').html("")
 
 $('html').keydown((event) ->
   switch event.keyCode
@@ -122,3 +107,21 @@ $('html').keydown((event) ->
     when 37 then game.turn('west')
     when 39 then game.turn('east')
 )
+
+SIZE = parseInt(prompt("How large would you like the board?"))
+DELAY = 250
+game = Game(Snake(), SIZE, browser)
+game.initialize(SIZE)
+
+run_loop = () ->
+  window.setInterval((
+    () ->
+      browser.clear()
+      alive = game.step()
+      game.printBoard()
+      unless alive
+        browser.println("You Lose!")
+        clearInterval(run_loop)
+  ), DELAY)
+
+window.setTimeout(run_loop, DELAY)
