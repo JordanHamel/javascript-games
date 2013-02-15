@@ -111,6 +111,20 @@ printBoard = (board) ->
       else if board[i][j] == game.mouse.mark
         $('#' + i + j).addClass('mouse')
 
+updateBoard = (board) ->
+  $('.square').removeClass('snake head tail mouse')
+  size = board.length
+  for i in [0...size]
+    for j in [0...size]
+      if board[i][j] == snake.mark
+        $('#' + i + j).addClass('snake')
+        if snake.head()[0] == i && snake.head()[1] == j
+          $('#' + i + j).addClass('head')
+        else if snake.tail()[0] == i && snake.tail()[1] == j
+          $('#' + i + j).addClass('tail')
+      else if board[i][j] == game.mouse.mark
+        $('#' + i + j).addClass('mouse')
+
 
 browser =
   println: (string) ->
@@ -134,12 +148,9 @@ stopGame = () ->
   window.clearInterval(run)
 
 runStep = () ->
-  browser.clear()
-  alive = game.step()
-  printBoard(board.board)
+  updateBoard(board.board)
   unless alive
-    browser.println("You Lose!")
-    stopGame()
+    browser.println("You Lose!") && stopGame()
 
 paused = false
 togglePause = () ->
@@ -153,10 +164,10 @@ togglePause = () ->
 SIZE = parseInt(prompt("How large would you like the board?"))
 DELAY = 200
 
-window.setTimeout(runGame, DELAY)
 snake = Snake()
 board = Board(SIZE)
 game = Game(snake, board)
 game.initialize()
+window.setTimeout(runGame, DELAY)
 
 $('.game').css("width", SIZE * 50);
