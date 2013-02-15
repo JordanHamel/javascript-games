@@ -125,12 +125,14 @@ updateBoard = (board) ->
       else if board[i][j] == game.mouse.mark
         $('#' + i + j).addClass('mouse')
 
+printScore = () ->
+  $('.message').text("Score: " + snake.length())
 
 browser =
   println: (string) ->
     $('.message').append(string)
   clear: () ->
-    $('.game').html("")
+    $('.game').detach()
 
 $('html').keydown((event) ->
   switch event.keyCode
@@ -149,8 +151,10 @@ stopGame = () ->
 
 runStep = () ->
   updateBoard(board.board)
+  printScore()
+  alive = game.step()
   unless alive
-    browser.println("You Lose!") && stopGame()
+    $('.message').text("You Lose!") && stopGame()
 
 paused = false
 togglePause = () ->
@@ -168,6 +172,7 @@ snake = Snake()
 board = Board(SIZE)
 game = Game(snake, board)
 game.initialize()
+printBoard(board.board)
 window.setTimeout(runGame, DELAY)
 
 $('.game').css("width", SIZE * 50);
